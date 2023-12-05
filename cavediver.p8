@@ -1,6 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
+cartdata("cavediver_scores")
+
 function _init()
 	game_over=false
 	make_cave()
@@ -13,6 +15,9 @@ function _update()
 		move_player()
 		check_hit()
 		player.score += player.speed
+		else if (btnp(5)) then
+			_init()
+		end
 	end
 end
 
@@ -21,6 +26,7 @@ function _draw()
 	draw_cave()
 	draw_player()
 	print(player.score,2,0,0)
+	print(player.hiscore,110,0,0)
 end
 
 function check_hit()
@@ -75,11 +81,15 @@ function make_player()
 	player.dead=3
 	player.speed=2
 	player.score=0
+	player.hiscore = dget(1)
 end
 
 function draw_player()
 	if (game_over) then
 		spr(player.dead, player.x, player.y)
+		if (player.score > player.hiscore) then
+			dset(1, player.score)
+		end
 	elseif (player.dy<0) then
 		spr(player.rise, player.x, player.y)
 	else
