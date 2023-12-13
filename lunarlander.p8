@@ -1,10 +1,15 @@
 pico-8 cartridge // http://www.pico-8.com
 version 41
 __lua__
+cartdata("lunarlander_scores")
+
 function _init()
 	game_over=false
 	win=false
+	fuel=100
+	best=dget(0)
 	g=0.025 --gravity
+	safe_speed = 0.5
 	make_player()
 	make_ground()
 end
@@ -20,12 +25,18 @@ end
 
 function _draw()
 	cls()
+	print("fuel:"..tostr(fuel),0,10)
+	print("best:"..tostr(best),100,10)
 	draw_stars()
 	draw_player()
 	draw_ground()
 	if (game_over) then
 		if (win) then
 			print("the eagle has landed!",25,48,11)
+			if (fuel>best) then
+				best=fuel
+				dset(0,best)
+			end
 		else
 			print("the turkey has crashed!",25,48,11)
 		end
@@ -40,7 +51,7 @@ function check_land()
 	
 	over_pad=l_x>=pad.x and r_x<=pad.x+pad.width
 	on_pad=b_y>=pad.y-1
-	slow=p.dy<1
+	slow=p.dy<safe_speed
 	
 	if (over_pad and on_pad and slow) then
 		end_game(true)
@@ -65,10 +76,15 @@ function end_game(won)
 end
 
 function thrust()
-	if (btn(0)) p.dx-=p.thrust
-	if (btn(1)) p.dx+=p.thrust
-	if (btn(2)) p.dy-=p.thrust	
-	if (btn(0) or btn(1) or btn(2)) sfx(0)
+	if (fuel>0) then
+		if (btn(0)) p.dx-=p.thrust
+		if (btn(1)) p.dx+=p.thrust
+		if (btn(2)) p.dy-=p.thrust	
+		if (btn(0) or btn(1) or btn(2)) then
+			sfx(0)
+			fuel = fuel - 1
+		end
+	end
 end
 
 function stay_on_screen()
